@@ -3,6 +3,7 @@ import glob
 
 def init_path(checkpoint_dir, config_dir, size=512, old_version=False, preprocess='crop'):
 
+    safetensor_paths = glob.glob(os.path.join(checkpoint_dir, '*.safetensors'))
     if old_version:
         #### load all the checkpoint of `pth`
         sadtalker_paths = {
@@ -14,12 +15,11 @@ def init_path(checkpoint_dir, config_dir, size=512, old_version=False, preproces
         }
 
         use_safetensor = False
-    elif '.safetensors' in checkpoint_dir:
+    elif len(safetensor_paths):
         print('using safetensor as default')
-        # sadtalker_paths = {
-        #     "checkpoint":os.path.join(checkpoint_dir, 'SadTalker_V0.0.2_'+str(size)+'.safetensors'),
-        #     }
-        sadtalker_paths = {"checkpoint":checkpoint_dir}
+        sadtalker_paths = {
+            "checkpoint": safetensor_paths[0],
+        }
         use_safetensor = True
     else:
         print("WARNING: The new version of the model will be updated by safetensor, you may need to download it mannully. We run the old version of the checkpoint this time!")
@@ -39,10 +39,10 @@ def init_path(checkpoint_dir, config_dir, size=512, old_version=False, preproces
     sadtalker_paths['use_safetensor'] =  use_safetensor # os.path.join(config_dir, 'auido2exp.yaml')
 
     if 'full' in preprocess:
-        sadtalker_paths['mappingnet_checkpoint'] = os.path.join('/home/yckj3822/img2video/SadTalker-main/checkpoints', 'mapping_00109-model.pth.tar')
+        sadtalker_paths['mappingnet_checkpoint'] = os.path.join(checkpoint_dir, 'mapping_00109-model.pth.tar')
         sadtalker_paths['facerender_yaml'] = os.path.join(config_dir, 'facerender_still.yaml')
     else:
-        sadtalker_paths['mappingnet_checkpoint'] = os.path.join('/home/yckj3822/img2video/SadTalker-main/checkpoints', 'mapping_00229-model.pth.tar')
+        sadtalker_paths['mappingnet_checkpoint'] = os.path.join(checkpoint_dir, 'mapping_00229-model.pth.tar')
         sadtalker_paths['facerender_yaml'] = os.path.join(config_dir, 'facerender.yaml')
 
     return sadtalker_paths
