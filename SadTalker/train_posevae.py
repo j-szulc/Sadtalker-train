@@ -12,7 +12,7 @@ import numpy as np
 from scipy.io import loadmat, savemat
 
 from src.utils.preprocess import CropAndExtract
-from src.test_audio2coeff import Audio2Coeff  
+from src.test_audio2coeff import Audio2Coeff, load_cpk
 from src.facerender.animate import AnimateFromCoeff
 from src.generate_batch import get_data
 from src.generate_facerender_batch import get_facerender_data
@@ -206,7 +206,7 @@ if __name__ == '__main__':
     parser.add_argument("--preprocess", default='crop', choices=['crop', 'extcrop', 'resize', 'full', 'extfull'], help="how to preprocess the images" ) 
     parser.add_argument("--old_version",action="store_true", help="use the pth other than safetensor version" ) 
     parser.add_argument("--size", type=int, default=256,  help="the image size of the facerender")
-    parser.add_argument("--checkpoint_dir", default='./checkpoints/SadTalker_V0.0.2_256.safetensors', help="path to output")
+    parser.add_argument("--checkpoint_dir", default='./checkpoints', help="path to output")
     parser.add_argument("--batch_size", type=int, default=64,  help="train batch size")
     parser.add_argument('--save_dir', type=str, default='./result_pose')
     parser.add_argument('--save_name', type=str, default='exp1')

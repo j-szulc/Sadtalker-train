@@ -32,19 +32,20 @@ def save_orig_mel(wavpath):
         wav = crop_pad_audio(wav, wav_length)
         orig_mel = audio.melspectrogram(wav).T    #得到特征
         diranme = os.path.dirname(wavpath)
-        save_path = diranme.replace(org_dir,save_dir)
+        save_path = diranme.replace(org_dir, save_dir)
         os.makedirs(save_path, exist_ok= True)
         save_path = save_path + '/orig_mel.npy'
         np.save(save_path,orig_mel)
-    except:
-        return 
+    except Exception as e:
+        print(f"Error processing {wavpath}: {e}")
+        return
 
 
-inputs_path = '/metahuman/wyt/preprocess/audio/2dhighresolution_230606_wav.txt'  #wav_dir
-wav_paths = Get_img_paths(inputs_path)
+org_dir = './preprocess_save_CREMA-D/audio'
+save_dir = './preprocess_save_CREMA-D/orig_mel'
 
-org_dir = '/metahuman/wyt/preprocess/audio/'
-save_dir = '/metahuman/wyt/preprocess/orig_mel/'
+# make wav_paths a list of paths to all wav files in org_dir
+wav_paths = Get_img_paths(org_dir, '.wav')
 
 with Pool(processes=16) as p:  #os.cpu_count()
     with tqdm(total=len(wav_paths)) as pbar:

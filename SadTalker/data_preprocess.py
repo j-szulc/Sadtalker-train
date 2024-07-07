@@ -28,7 +28,11 @@ def extract_audios_from_videos(vfile, audio_save_dir, video_org_dir):
         vidname = os.path.basename(vfile).split('.')[0]
 
         fulldir = vfile.replace(video_org_dir, audio_save_dir) 
+        # extract the path without the extension from fulldir in a way that works with relative paths
+        # first make fulldir an absolute path
+        fulldir = os.path.abspath(fulldir)
         fulldir = fulldir.split('.')[0]
+
         os.makedirs(fulldir, exist_ok=True)
 
         wavpath = os.path.join(fulldir, 'audio.wav')
@@ -55,14 +59,16 @@ def mp_handler(job):
 if __name__ == '__main__':
     
     #预处理结果保存的路径
-    preprocess_save_dir = '/metahuman/wyt/debug/'
+    preprocess_save_dir = './preprocess_save_CREMA-D'
     os.makedirs(preprocess_save_dir, exist_ok= True)
     
     
     #step1:提取audio
-    input_dir = 'your video root dir'
-    video_org_dir = '/metahuman/data/'
-    audio_save_dir =  preprocess_save_dir +  '/audio/'
+    # input_dir = './Angry_video'
+    # video_org_dir = './Angry_video'
+    input_dir = './data/Angry/CREMA-D_video'
+    video_org_dir = './data/Angry/CREMA-D_video'
+    audio_save_dir =  preprocess_save_dir +  '/audio'
     video_paths = Get_img_paths(input_dir, ext = 'mp4')
     extract_audios_from_videos_multi(video_paths, audio_save_dir, video_org_dir)
 

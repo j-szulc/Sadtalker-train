@@ -4,7 +4,8 @@ import safetensors.torch
 
 
 org = './checkpoints/SadTalker_V0.0.2_256.safetensors'
-new = 'your train model'
+# new = './result_pose/ravdess2/ep334_iter1000.safetensors'
+new = './result_pose/crema-d/ep475_iter9500.safetensors'
 
 org = safetensors.torch.load_file(org)
 new = safetensors.torch.load_file(new)
