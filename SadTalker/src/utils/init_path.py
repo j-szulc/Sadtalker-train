@@ -1,7 +1,7 @@
 import os
 import glob
 
-def init_path(checkpoint_dir, config_dir, size=512, old_version=False, preprocess='crop'):
+def init_path(checkpoint_dir, config_dir, size=512, old_version=False, audio2exp_checkpoint="auido2exp_00300-model.pth", preprocess='crop'):
 
     safetensor_paths = glob.glob(os.path.join(checkpoint_dir, '*.safetensors'))
     if old_version:
@@ -9,7 +9,7 @@ def init_path(checkpoint_dir, config_dir, size=512, old_version=False, preproces
         sadtalker_paths = {
                 'wav2lip_checkpoint' : os.path.join(checkpoint_dir, 'wav2lip.pth'),
                 'audio2pose_checkpoint' : os.path.join(checkpoint_dir, 'auido2pose_00140-model.pth'),
-                'audio2exp_checkpoint' : os.path.join(checkpoint_dir, 'auido2exp_00300-model.pth'),
+                'audio2exp_checkpoint' : os.path.join(checkpoint_dir, audio2exp_checkpoint),
                 'free_view_checkpoint' : os.path.join(checkpoint_dir, 'facevid2vid_00189-model.pth.tar'),
                 'path_of_net_recon_model' : os.path.join(checkpoint_dir, 'epoch_20.pth')
         }
