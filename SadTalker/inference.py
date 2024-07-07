@@ -30,7 +30,7 @@ def main(args):
 
     current_root_path = os.path.split(sys.argv[0])[0]
 
-    sadtalker_paths = init_path(args.checkpoint_dir, os.path.join(current_root_path, 'src/config'), args.size, args.old_version, args.preprocess)
+    sadtalker_paths = init_path(args.checkpoint_dir, os.path.join(current_root_path, 'src/config'), args.size, args.old_version, args.preprocess, audio2exp_checkpoint=args.expnet_checkpoint)
 
     #init model
     preprocess_model = CropAndExtract(sadtalker_paths, device) #β ρ估计
@@ -102,6 +102,8 @@ if __name__ == '__main__':
     parser.add_argument("--ref_eyeblink", default=None, help="path to reference video providing eye blinking")
     parser.add_argument("--ref_pose", default=None, help="path to reference video providing pose")
     parser.add_argument("--checkpoint_dir", default='./checkpoints', help="path to output")
+    # To use fine-tuned version, use "fine_tuned_expnet.pth"
+    parser.add_argument("--expnet-checkpoint", default="auido2exp_00300-model.pth", help="ExpNet checkpoint within checkpoint_dir to use")
     parser.add_argument("--result_dir", default='./results', help="path to output")
     parser.add_argument("--pose_style", type=int, default=0,  help="input pose style from [0, 46)")
     parser.add_argument("--batch_size", type=int, default=2,  help="the batch size of facerender")
