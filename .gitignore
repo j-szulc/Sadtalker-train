@@ -513,5 +513,6 @@ pip-selfcheck.json
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,jetbrains+all,dotenv,venv,node,python,rust,c++,visualstudiocode
-SadTalker/gfpgan/weights
-SadTalker/checkpoints
+**/gfpgan/weights
+**/checkpoints
+**/__pycache__
