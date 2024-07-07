@@ -74,6 +74,19 @@ def main(args):
     batch = get_data(first_coeff_path, audio_path, device, ref_eyeblink_coeff_path, still=args.still)  #对音频进行处理
     coeff_path = audio_to_coeff.generate(batch, save_dir, pose_style, ref_pose_coeff_path)  #生成生成β1-n，ρ1-n
 
+    if args.save_betas is not None:
+        shutil.copy(coeff_path, args.save_betas)
+        return
+    
+    if args.override_betas is not None:
+        coeff = loadmat(coeff_path)
+        override_coeff = torch.load(args.override_betas, map_location="cpu").detach().cpu().numpy()
+        frame_count = override_coeff.shape[0]
+        assert frame_count == coeff['coeff_3dmm'].shape[0]
+        feature_count = override_coeff.shape[1]
+        coeff['coeff_3dmm'][:, :feature_count] = override_coeff
+        savemat(coeff_path, coeff)
+
     # 3dface render
     if args.face3dvis:
         from src.face3d.visualize import gen_composed_video
@@ -99,6 +112,8 @@ if __name__ == '__main__':
     parser = ArgumentParser()  
     parser.add_argument("--driven_audio", default='./examples/driven_audio/bus_chinese.wav', help="path to driven audio")
     parser.add_argument("--source_image", default='./examples/source_image/full_body_1.png', help="path to source image")
+    parser.add_argument("--save-betas", default=None, help="path to store betas and interrupt inference")
+    parser.add_argument("--override-betas", default=None, help="path to override betas")
     parser.add_argument("--ref_eyeblink", default=None, help="path to reference video providing eye blinking")
     parser.add_argument("--ref_pose", default=None, help="path to reference video providing pose")
     parser.add_argument("--checkpoint_dir", default='./checkpoints', help="path to output")
