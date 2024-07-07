@@ -516,3 +516,4 @@ pip-selfcheck.json
 **/gfpgan/weights
 **/checkpoints
 **/__pycache__
+**/*.pyc
