@@ -11,6 +11,7 @@ from src.facerender.animate import AnimateFromCoeff
 from src.generate_batch import get_data
 from src.generate_facerender_batch import get_facerender_data
 from src.utils.init_path import init_path
+from scipy.io import loadmat, savemat
 
 def main(args):
     #torch.backends.cudnn.enabled = False
@@ -75,7 +76,8 @@ def main(args):
     coeff_path = audio_to_coeff.generate(batch, save_dir, pose_style, ref_pose_coeff_path)  #生成生成β1-n，ρ1-n
 
     if args.save_betas is not None:
-        shutil.copy(coeff_path, args.save_betas)
+        coeff = loadmat(coeff_path)
+        torch.save(torch.tensor(coeff['coeff_3dmm']), args.save_betas)
         return
     
     if args.override_betas is not None:
