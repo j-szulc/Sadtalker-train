@@ -16,8 +16,8 @@ def train(model, train_betas_source, train_betas_target, test_betas_source, test
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--betas-target", type=pathlib.Path, nargs="+")
-    parser.add_argument("--betas-source", type=pathlib.Path, nargs="+")
+    parser.add_argument("--betas-target", type=pathlib.Path, nargs="+", help='"Ground-truth" betas')
+    parser.add_argument("--betas-source", type=pathlib.Path, nargs="+", help="Betas from the original model")
     parser.add_argument("--model", choices=zoo.keys(), default="automl")
     parser.add_argument("--test-size", type=float, default=0.1)
     parser.add_argument("--cpu", action="store_true")
