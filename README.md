@@ -74,3 +74,9 @@ python emotion_adding/inference.py --model path/to/model.pkl --betas-source path
 ```bash
 python inference.py --override-betas path/to/generated/betas --driven_audio path/to/audio.wav --source_image path/to/image.jpg --result_dir path/to/output
 ```
+
+#### Additional features
+
+Note that there are two additional arguments in `emotion_adding/inference.py` script:
+- `alpha` - the weight of the new expression vector in the final expression vector,
+- `ortho` - whether to orthogonalize the new expression vector with the original one.
