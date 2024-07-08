@@ -82,6 +82,7 @@ if __name__ == "__main__":
     parser.add_argument("--checkpoint", type=argparse.FileType("rb"), help="Path to a pickled model")
     parser.add_argument("--model", choices=zoo.keys(), default="automl")
     parser.add_argument("--output", type=argparse.FileType("wb"), default=None)
+    parser.add_argument("--alpha", type=float, default=1., help="Weighted average of the original and new betas, using formula: alpha*new_betas + (1-alpha)*original_betas. Note: can be negative or more than one.")
     args = parser.parse_args()
     flatten = (args.model != "transformer")
     if args.betas_target:
@@ -95,6 +96,10 @@ if __name__ == "__main__":
         print(f"Score: {score}")
     if args.output:
         pred = model.predict(betas_source)
+        pred = torch.as_tensor(pred)
+        pred_source = torch.as_tensor(betas_source).detach()
+        pred_source = pred_source.reshape(-1, FRAME_LEN, EXPRESSION_SPACE_DIM)
+        pred = args.alpha * pred + (1-args.alpha) * betas_source[:,-1]
         torch.save(pred, args.output)
 
     
