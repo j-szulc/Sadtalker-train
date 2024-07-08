@@ -10,6 +10,13 @@ from transformer import get_transformer
 FRAME_LEN=5
 EXPRESSION_SPACE_DIM = 64
 
+def ortho_proj(v, u):
+    """
+    Project v onto u using orthogonal projection.
+    Output vector is in the linear span of u.
+    """
+    return u * (torch.dot(v, u) / torch.linalg.norm(u))
+
 def process_x(betas_x, flatten=True):
     n_frames = len(betas_x)
     end_idxs = [n_frames-(FRAME_LEN-i-1) for i in range(FRAME_LEN)]
@@ -83,6 +90,7 @@ if __name__ == "__main__":
     parser.add_argument("--model", choices=zoo.keys(), default="automl")
     parser.add_argument("--output", type=argparse.FileType("wb"), default=None)
     parser.add_argument("--alpha", type=float, default=1., help="Weighted average of the original and new betas, using formula: alpha*new_betas + (1-alpha)*original_betas. Note: can be negative or more than one.")
+    parser.add_argument("--ortho", action="store_true", help="Use orthogonal projection")
     args = parser.parse_args()
     flatten = (args.model != "transformer")
     if args.betas_target:
@@ -99,7 +107,12 @@ if __name__ == "__main__":
         pred = torch.as_tensor(pred)
         pred_source = torch.as_tensor(betas_source).detach()
         pred_source = pred_source.reshape(-1, FRAME_LEN, EXPRESSION_SPACE_DIM)
-        pred = args.alpha * pred + (1-args.alpha) * betas_source[:,-1]
+        diff = pred - betas_source[:,-1]
+        if args.ortho:
+            diff = torch.stack([ortho_proj(d, p) for d,p in zip(diff, pred_source)])
+        # pred = args.alpha * pred + (1-args.alpha) * betas_source[:,-1]
+        # equivalent to:
+        pred = betas_source[:,-1] + args.alpha * diff
         torch.save(pred, args.output)
 
     
