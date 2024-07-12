@@ -2,6 +2,17 @@ import torch
 import numpy as np
 import torch.nn as nn
 from skorch import NeuralNetRegressor
+from skorch.callbacks import Callback
+import os
+import dill
+
+class CheckpointEveryEpoch(Callback):
+
+    def on_epoch_end(self, net, **kwargs):
+        epoch=net.history[-1]['epoch']
+        with open(f"{net.module_.__name__}_checkpoint_{epoch}.pth", "wb"):
+            dill.dump(net.module_, f)
+        print(f"Checkpoint saved to checkpoint_{epoch}.pth")
 
 class PositionalEncoding(nn.Module):
 
@@ -50,11 +61,14 @@ class LossScoredNeuralNetRegressor(NeuralNetRegressor):
             y = torch.as_tensor(y, device=device)
             return -self.get_loss(y_pred, y).item()
 
-def get_transformer(device, max_len=8, d_model=64, nhead=8, dim_feedforward=256, num_layers=16):
+def get_transformer(device, max_len=8, d_model=64, nhead=8, dim_feedforward=256, num_layers=16, max_epochs=100):
     model = nn.Sequential(
         PositionalEncoding(d_model=d_model, max_len=max_len),
         MaskedTransformerDecoder(torch.nn.TransformerDecoder(
             torch.nn.TransformerDecoderLayer(d_model=d_model, nhead=nhead, dim_feedforward=dim_feedforward, batch_first=True),
             num_layers=num_layers
     ))).to(device)
-    return LossScoredNeuralNetRegressor(model, criterion=LastTokenMSELoss, device=device, max_epochs=1)
+    result = LossScoredNeuralNetRegressor(model, criterion=LastTokenMSELoss, device=device, max_epochs=max_epochs, iterator_train__shuffle=True, callbacks=[CheckpointEveryEpoch()])
+    result.input_shape = "(BATCH_SIZE, FRAME_LEN, D_MODEL)"
+    result.torch_or_numpy = "torch"
+    return result

@@ -33,7 +33,7 @@ def process_y(betas_y, flatten=True):
         result = result[:,None,:]
     return result
     
-def load_xy(source_list, target_list, flatten=True):
+def load_xy(source_list, target_list, device=None, flatten=True):
     for file in [*source_list, *target_list]:
         assert file.exists(), f"File {file} does not exist"
         assert file.is_file(), f"Path {file} is not a file"
@@ -43,8 +43,8 @@ def load_xy(source_list, target_list, flatten=True):
     assert source_stems == target_stems, "Source betas should correspond 1-1 to target betas, but got different file stems"
     assert len(set(source_stems)) == len(source_stems), "Duplicate file stems found!"
     assert len(set(target_stems)) == len(target_stems), "Duplicate file stems found!"
-    x = [torch.load(source).detach() for source in tqdm(source_list)]
-    y = [torch.load(target).detach() for target in tqdm(target_list)]
+    x = [torch.load(source, map_location=device).detach() for source in tqdm(source_list)]
+    y = [torch.load(target, map_location=device).detach() for target in tqdm(target_list)]
     x = [process_x(b, flatten=flatten) for b in x]
     y = [process_y(b, flatten=flatten) for b in y]
     x = torch.cat(x, axis=0)
@@ -60,45 +60,29 @@ def load_x(source_list, flatten=True):
     x = torch.cat(x, axis=0)
     return x
 
-def get_automl(_):
-    from autosklearn.regression import AutoSklearnRegressor
-    import autosklearn
-    return AutoSklearnRegressor(
-        time_left_for_this_task=60*4,
-        # time_left_for_this_task=60*60*4,
-        # per_run_time_limit=60*6*4,
-        memory_limit=6*1024,
-        metric=autosklearn.metrics.mean_squared_error,
-        n_jobs=5,
-    )
-
-def get_linear(_):
-    from sklearn.linear_model import LinearRegression
-    return LinearRegression()
-
-zoo = {
-    "automl": get_automl,
-    "linear": get_linear,
-    "transformer": get_transformer,
-}
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--betas-target", type=pathlib.Path, nargs="+", help="Used for scoring")
     parser.add_argument("--betas-source", type=pathlib.Path, nargs="+")
-    parser.add_argument("--checkpoint", type=argparse.FileType("rb"), help="Path to a pickled model")
-    parser.add_argument("--model", choices=zoo.keys(), default="automl")
+    parser.add_argument("--model", type=argparse.FileType("rb"), help="Path to a pickled model")
     parser.add_argument("--output", type=argparse.FileType("wb"), default=None)
     parser.add_argument("--alpha", type=float, default=1., help="Weighted average of the original and new betas, using formula: alpha*new_betas + (1-alpha)*original_betas. Note: can be negative or more than one.")
     parser.add_argument("--ortho", action="store_true", help="Use orthogonal projection")
     args = parser.parse_args()
-    flatten = (args.model != "transformer")
+    model = pickle.load(args.model)
+
+    if model.input_shape == "(BATCH_SIZE, FRAME_LEN, D_MODEL)":
+        flatten = False
+    elif model.input_shape == "((BATCH_SIZE, FRAME_LEN), D_MODEL)":
+        flatten = True
+    else:
+        raise ValueError(f"Unknown input_shape: {input_shape}")
+
     if args.betas_target:
         betas_source, betas_target = load_xy(args.betas_source, args.betas_target, flatten=flatten)
     else:
         betas_source = load_x(args.betas_source, flatten=flatten)
         betas_target = None
-    model = pickle.load(args.checkpoint)
     if betas_target is not None:
         score = model.score(betas_source, betas_target)
         print(f"Score: {score}")
